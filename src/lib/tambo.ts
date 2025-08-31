@@ -19,6 +19,8 @@ import { TamboTool } from "@tambo-ai/react";
 import { z } from "zod";
 import RecipeCard from "@/components/recipe-card";
 import WeatherCard from "@/components/ui/weather-card";
+import ColorPalette from "@/components/color-palette";
+
 /**
  * tools
  *
@@ -113,6 +115,29 @@ export const tools: TamboTool[] = [
     ],
     toolSchema: z.function().returns(z.array(z.string())),
   },
+  {
+    name: "generate-color-palette",
+    description: "Generate a color palette based on a theme or style. Returns an array of hex color codes.",
+    tool: (theme: string = "sunset") => {
+      const palettes: Record<string, string[]> = {
+        sunset: ["#FF6B6B", "#FF8E53", "#FFB347", "#FFD93D", "#FF6B9D"],
+        ocean: ["#006994", "#1E90FF", "#87CEEB", "#B0E0E6", "#E0F6FF"],
+        forest: ["#228B22", "#32CD32", "#90EE90", "#98FB98", "#F0FFF0"],
+        desert: ["#DEB887", "#F4A460", "#D2B48C", "#CD853F", "#8B4513"],
+        night: ["#191970", "#483D8B", "#6A5ACD", "#9370DB", "#BA55D3"],
+        spring: ["#FFB6C1", "#FFC0CB", "#FFE4E1", "#F0E68C", "#98FB98"],
+        autumn: ["#8B4513", "#A0522D", "#CD853F", "#D2691E", "#FF6347"],
+        winter: ["#F0F8FF", "#E6E6FA", "#B0C4DE", "#87CEEB", "#ADD8E6"],
+        fire: ["#FF4500", "#FF6347", "#FF7F50", "#FF8C00", "#FFA500"],
+        earth: ["#8B4513", "#A0522D", "#CD853F", "#D2691E", "#B8860B"]
+      };
+      return palettes[theme.toLowerCase()] || palettes.sunset;
+    },
+    toolSchema: z
+      .function()
+      .args(z.string().optional().describe("Theme for the color palette (e.g., 'sunset', 'ocean', 'forest')"))
+      .returns(z.array(z.string().describe("Array of hex color codes"))),
+  }
   // Add more tools here
 ];
 
@@ -170,6 +195,15 @@ export const components: TamboComponent[] = [
       temperature: z.number().describe("Termperature in Celcius"),
       condition: z.enum(["sunny", "cloudy", "rainy"]).describe("Weather condition"),
       humidity: z.number().describe("Humidity Percentage"),
+    }),
+  },
+  {
+    name: "ColorPalette",
+    description: "A component that displays a color palette with hex codes",
+    component: ColorPalette,
+    propsSchema: z.object({
+      colors: z.array(z.string()).describe("Array of hex color codes"),
+      paletteName: z.string().describe("Name of the color palette"),
     }),
   }
   // Add more components here
