@@ -1,148 +1,79 @@
-# Tambo Template
+# Presentation Generator Template
 
-This is a starter NextJS app with Tambo hooked up to get your AI app development started quickly.
+A professional presentation generator built with Next.js and Tambo AI that creates content-rich slides with integrated images.
 
-## Get Started
+## Overview
 
-1. Run `npm create-tambo@latest my-tambo-app` for a new project
+This template provides a complete solution for generating professional presentations with AI-powered content creation. It includes pre-defined templates, dynamic content generation, and a beautiful slideshow interface.
 
-2. `npm install`
+## Installation
 
-3. `npx tambo init`
-
-- or rename `example.env.local` to `.env.local` and add your tambo API key you can get for free [here](https://tambo.co/dashboard).
-
-4. Run `npm run dev` and go to `localhost:3000` to use the app!
-
-## Customizing
-
-### Change what components tambo can control
-
-You can see how the `Graph` component is registered with tambo in `src/lib/tambo.ts`:
-
-```tsx
-const components: TamboComponent[] = [
-  {
-    name: "Graph",
-    description:
-      "A component that renders various types of charts (bar, line, pie) using Recharts. Supports customizable data visualization with labels, datasets, and styling options.",
-    component: Graph,
-    propsSchema: z.object({
-      data: z
-        .object({
-          type: z
-            .enum(["bar", "line", "pie"])
-            .describe("Type of graph to render"),
-          labels: z.array(z.string()).describe("Labels for the graph"),
-          datasets: z
-            .array(
-              z.object({
-                label: z.string().describe("Label for the dataset"),
-                data: z
-                  .array(z.number())
-                  .describe("Data points for the dataset"),
-                color: z
-                  .string()
-                  .optional()
-                  .describe("Optional color for the dataset"),
-              }),
-            )
-            .describe("Data for the graph"),
-        })
-        .describe("Data object containing chart configuration and values"),
-      title: z.string().optional().describe("Optional title for the chart"),
-      showLegend: z
-        .boolean()
-        .optional()
-        .describe("Whether to show the legend (default: true)"),
-      variant: z
-        .enum(["default", "solid", "bordered"])
-        .optional()
-        .describe("Visual style variant of the graph"),
-      size: z
-        .enum(["default", "sm", "lg"])
-        .optional()
-        .describe("Size of the graph"),
-    }),
-  },
-  // Add more components for Tambo to control here!
-];
-```
-
-You can install this graph component into any project with:
-
+### Option 1: Fork and Clone (Recommended)
+1. Fork this repository to your GitHub account
+2. Clone your forked repository:
 ```bash
-npx tambo add graph
+git clone https://github.com/saim-x/tambo-presentation-slides
+cd tambo-presentation-slides
 ```
 
-The example Graph component demonstrates several key features:
-
-- Different prop types (strings, arrays, enums, nested objects)
-- Multiple chart types (bar, line, pie)
-- Customizable styling (variants, sizes)
-- Optional configurations (title, legend, colors)
-- Data visualization capabilities
-
-Update the `components` array with any component(s) you want tambo to be able to use in a response!
-
-You can find more information about the options [here](https://tambo.co/docs/concepts/registering-components)
-
-### Add tools for tambo to use
-
-```tsx
-export const tools: TamboTool[] = [
-  {
-    name: "globalPopulation",
-    description:
-      "A tool to get global population trends with optional year range filtering",
-    tool: getGlobalPopulationTrend,
-    toolSchema: z.function().args(
-      z
-        .object({
-          startYear: z.number().optional(),
-          endYear: z.number().optional(),
-        })
-        .optional(),
-    ),
-  },
-];
+### Option 2: Manual Setup
+1. Create a new Tambo app:
+```bash
+npm create tambo-app@latest my-presentation-app
+cd my-presentation-app
 ```
 
-Find more information about tools [here.](https://tambo.co/docs/concepts/tools)
+2. Replace the default files with the custom presentation generator files:
+   - Copy the provided `tambo.ts` to `src/lib/tambo.ts`
+   - Create `src/components/slide-generator.tsx` with the provided code
 
-### The Magic of Tambo Requires the TamboProvider
-
-Make sure in the TamboProvider wrapped around your app:
-
-```tsx
-...
-<TamboProvider
-  apiKey={process.env.NEXT_PUBLIC_TAMBO_API_KEY!}
-  components={components} // Array of components to control
-  tools={tools} // Array of tools it can use
->
-  {children}
-</TamboProvider>
+3. Install dependencies:
+```bash
+npm install
 ```
 
-In this example we do this in the `Layout.tsx` file, but you can do it anywhere in your app that is a client component.
-
-### Change where component responses are shown
-
-The components used by tambo are shown alongside the message resopnse from tambo within the chat thread, but you can have the result components show wherever you like by accessing the latest thread message's `renderedComponent` field:
-
-```tsx
-const { thread } = useTambo();
-const latestComponent =
-  thread?.messages[thread.messages.length - 1]?.renderedComponent;
-
-return (
-  <div>
-    {latestComponent && (
-      <div className="my-custom-wrapper">{latestComponent}</div>
-    )}
-  </div>
-);
+4. Initialize Tambo (automatically configures your API key):
+```bash
+npx tambo init
 ```
+
+## Configuration
+
+Add your Unsplash Access Key to `.env.local`:
+```
+NEXT_PUBLIC_UNSPLASH_ACCESS_KEY=your_access_key_here
+```
+
+## Usage
+
+1. Start the development server:
+```bash
+npm run dev
+```
+
+2. Open [http://localhost:3000](http://localhost:3000)
+
+3. Request presentations using natural language:
+   - "Create a market analysis presentation"
+   - "Generate a product launch deck with 5 slides"
+   - "Make a technology presentation about AI"
+
+## Features
+
+- AI-powered content generation for any topic
+- Pre-defined templates for business, technology, and education
+- Integrated Unsplash image search
+- Professional slideshow interface with smooth animations
+- Multiple themes and customization options
+- Keyboard navigation and fullscreen mode
+
+## Customization
+
+Modify presentation templates in `src/lib/tambo.ts`:
+- Add new domains and topics
+- Customize slide content and structure
+- Adjust image search keywords
+
+## Support
 
 For more detailed documentation, visit [Tambo's official docs](https://docs.tambo.co).

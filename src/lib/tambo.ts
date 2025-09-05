@@ -1,402 +1,498 @@
 /**
  * @file tambo.ts
- * @description Central configuration file for Tambo components and tools
- *
- * This file serves as the central place to register your Tambo components and tools.
- * It exports arrays that will be used by the TamboProvider.
- *
- * Read more about Tambo at https://tambo.co/docs
+ * @description Enhanced Tambo configuration for professional presentation generation
+ * 
+ * This configuration focuses on business and educational presentations with
+ * rich, contextual content generation and proper image integration.
  */
 
-import { Graph, graphSchema } from "@/components/tambo/graph";
-import { DataCard, dataCardSchema } from "@/components/ui/card-data";
-import {
-  getCountryPopulations,
-  getGlobalPopulationTrend,
-} from "@/services/population-stats";
-import type { TamboComponent } from "@tambo-ai/react";
-import { TamboTool } from "@tambo-ai/react";
+import { TamboComponent, TamboTool } from "@tambo-ai/react";
 import { z } from "zod";
-import RecipeCard from "@/components/recipe-card";
-import WeatherCard from "@/components/ui/weather-card";
-import ColorPalette from "@/components/color-palette";
 import SlidesGenerator from '@/components/slide-generator';
 
-// Unsplash API configuration
-const UNSPLASH_ACCESS_KEY = process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY || "";
+// Expanded presentation templates for different domains
+const PRESENTATION_TEMPLATES = {
+  business: {
+    "market analysis": {
+      title: "Comprehensive Market Analysis",
+      slides: [
+        {
+          type: "intro",
+          heading: "Market Analysis: Industry Overview",
+          description: "In-depth analysis of market dynamics, competitive landscape, and growth opportunities in our target sector. This presentation examines key trends, market size, and strategic positioning.",
+          keywords: ["market analysis", "business strategy", "data visualization", "industry trends"]
+        },
+        {
+          type: "content",
+          heading: "Market Size & Growth Projections",
+          description: "The total addressable market is valued at $500 billion with a CAGR of 7.2%. Key growth drivers include digital transformation, changing consumer behavior, and emerging technologies like AI and blockchain.",
+          keywords: ["market growth", "financial charts", "business metrics", "growth projections"]
+        },
+        {
+          type: "content",
+          heading: "Competitive Landscape Analysis",
+          description: "Analysis reveals 5 major players controlling 60% market share. Key differentiators include pricing strategy, product features, and customer service excellence. Opportunities exist in underserved segments.",
+          keywords: ["competition analysis", "market share", "business competitors", "swot analysis"]
+        },
+        {
+          type: "content",
+          heading: "Target Customer Segmentation",
+          description: "Primary segments include enterprise clients (40%), SMBs (35%), and individual professionals (25%). Each segment demonstrates distinct needs, purchasing behaviors, and growth potential.",
+          keywords: ["customer segments", "target audience", "demographics", "buyer personas"]
+        },
+        {
+          type: "outro",
+          heading: "Strategic Recommendations & Action Plan",
+          description: "Recommend focusing on underserved segments, leveraging technology for competitive advantage, and building strategic partnerships. Implementation timeline: 6-12 months for initial results.",
+          keywords: ["business strategy", "action plan", "strategic recommendations", "next steps"]
+        }
+      ]
+    },
+    "product launch": {
+      title: "Product Launch Strategy Presentation",
+      slides: [
+        {
+          type: "intro",
+          heading: "Introducing Our Revolutionary Product",
+          description: "A breakthrough solution designed to transform how businesses operate and compete in the digital age. This product addresses critical pain points with innovative technology.",
+          keywords: ["product launch", "innovation", "new technology", "product introduction"]
+        },
+        {
+          type: "content",
+          heading: "The Problem We Solve",
+          description: "Businesses lose approximately 30% productivity due to inefficient processes. Current solutions are fragmented and expensive. Our product addresses these challenges with intelligent automation.",
+          keywords: ["business problem", "solution overview", "pain points", "market need"]
+        },
+        {
+          type: "content",
+          heading: "Key Features & Competitive Advantages",
+          description: "AI-powered analytics, real-time collaboration, enterprise-grade security, and proven 50% reduction in operational costs. Unique selling proposition: seamless integration with existing systems.",
+          keywords: ["product features", "competitive advantage", "benefits", "unique selling points"]
+        },
+        {
+          type: "content",
+          heading: "Go-to-Market Strategy",
+          description: "Phased rollout starting with key markets. Marketing budget: $2M. Sales strategy: direct sales for enterprise, channel partners for SMBs. Projected customer acquisition cost: $350.",
+          keywords: ["marketing strategy", "go to market", "sales plan", "launch timeline"]
+        },
+        {
+          type: "outro",
+          heading: "Launch Timeline & Success Metrics",
+          description: "Beta launch in Q2, full release in Q3. Key metrics: 1,000 customers in first year, $5M revenue. Early access program available with exclusive benefits for founding partners.",
+          keywords: ["timeline", "success metrics", "kpis", "launch plan"]
+        }
+      ]
+    },
+    "financial report": {
+      title: "Quarterly Financial Performance Report",
+      slides: [
+        {
+          type: "intro",
+          heading: "Q3 Financial Performance Overview",
+          description: "Comprehensive review of financial performance, key metrics, and strategic insights for the third quarter. Highlights include revenue growth, profitability, and market position.",
+          keywords: ["financial report", "quarterly results", "revenue", "performance metrics"]
+        },
+        {
+          type: "content",
+          heading: "Revenue Analysis & Growth Trends",
+          description: "Total revenue reached $125M, representing 15% year-over-year growth. Key drivers: new customer acquisition (35%), expansion of existing accounts (45%), and new product lines (20%).",
+          keywords: ["revenue analysis", "financial growth", "business performance", "sales metrics"]
+        },
+        {
+          type: "content",
+          heading: "Profitability & Cost Management",
+          description: "Operating margin improved to 22% through optimized operations and cost controls. EBITDA reached $28M, exceeding projections by 8%. Cost of goods sold decreased by 5% through supplier negotiations.",
+          keywords: ["profitability", "cost management", "financial metrics", "operational efficiency"]
+        },
+        {
+          type: "content",
+          heading: "Market Position & Competitive Analysis",
+          description: "Maintained #2 market position with 18% market share. Gained 3 percentage points against main competitor. Customer satisfaction scores reached all-time high of 92%.",
+          keywords: ["market position", "competitive analysis", "market share", "customer satisfaction"]
+        },
+        {
+          type: "outro",
+          heading: "Forward Outlook & Strategic Initiatives",
+          description: "Q4 projections: $140M revenue with 20% growth. Strategic initiatives: expansion into Asian markets, new product launch in Q1, and continued operational optimization.",
+          keywords: ["business outlook", "strategic initiatives", "forecasting", "future planning"]
+        }
+      ]
+    },
+    "business strategy": {
+      title: "Strategic Business Plan Presentation",
+      slides: [
+        {
+          type: "intro",
+          heading: "3-Year Strategic Business Plan",
+          description: "Comprehensive roadmap outlining our vision, strategic priorities, and growth initiatives for the next three years. Focus on market expansion, innovation, and operational excellence.",
+          keywords: ["business strategy", "strategic planning", "growth initiatives", "vision"]
+        },
+        {
+          type: "content",
+          heading: "Market Opportunity & Growth Strategy",
+          description: "Addressing a $250B market opportunity with focused expansion in high-growth segments. Strategy: penetrate existing markets deeper while expanding geographically into 3 new regions.",
+          keywords: ["market opportunity", "growth strategy", "business expansion", "market penetration"]
+        },
+        {
+          type: "content",
+          heading: "Innovation & Product Roadmap",
+          description: "$50M investment in R&D over 3 years. Key initiatives: AI-powered platform enhancements, mobile-first solutions, and integration capabilities. 6 major product releases planned.",
+          keywords: ["innovation", "product roadmap", "research development", "technology"]
+        },
+        {
+          type: "content",
+          heading: "Operational Excellence Initiatives",
+          description: "Targeting 30% improvement in operational efficiency through automation, process optimization, and technology upgrades. Expected to deliver $45M in cost savings over 3 years.",
+          keywords: ["operational excellence", "process optimization", "automation", "efficiency"]
+        },
+        {
+          type: "outro",
+          heading: "Implementation Timeline & Success Metrics",
+          description: "Phased implementation over 12 quarters. Key metrics: 25% CAGR, 35% market share target, 50% increase in customer base. Quarterly reviews with board to track progress.",
+          keywords: ["implementation", "timeline", "success metrics", "performance indicators"]
+        }
+      ]
+    }
+  },
+  technology: {
+    "ai transformation": {
+      title: "AI Transformation Strategy",
+      slides: [
+        {
+          type: "intro",
+          heading: "AI-Powered Digital Transformation Journey",
+          description: "How artificial intelligence is revolutionizing business operations, customer experiences, and decision-making across industries. This presentation outlines our AI adoption strategy.",
+          keywords: ["artificial intelligence", "digital transformation", "machine learning", "ai strategy"]
+        },
+        {
+          type: "content",
+          heading: "Current AI Applications & Use Cases",
+          description: "Successful implementations include predictive maintenance (30% reduction in downtime), customer service automation (40% cost reduction), and personalized marketing (25% conversion increase).",
+          keywords: ["ai applications", "use cases", "machine learning", "automation"]
+        },
+        {
+          type: "content",
+          heading: "Implementation Roadmap & Timeline",
+          description: "Phase 1: Pilot projects (3-6 months). Phase 2: Department-wide implementation (6-12 months). Phase 3: Enterprise rollout (12-24 months). Total investment: $5M with expected ROI within 18 months.",
+          keywords: ["implementation plan", "roadmap", "timeline", "project planning"]
+        },
+        {
+          type: "content",
+          heading: "Technology Stack & Infrastructure",
+          description: "Cloud-based AI platform, modular architecture, API-first design. Key technologies: TensorFlow, PyTorch, AWS SageMaker. Data infrastructure: Snowflake for data warehousing.",
+          keywords: ["technology stack", "infrastructure", "cloud computing", "ai platform"]
+        },
+        {
+          type: "outro",
+          heading: "Expected Outcomes & Success Metrics",
+          description: "Target outcomes: 40% process automation, 25% cost reduction, 30% revenue growth from AI-enabled products. Success measured through quarterly business reviews and KPI tracking.",
+          keywords: ["expected outcomes", "success metrics", "roi", "performance indicators"]
+        }
+      ]
+    },
+    "cloud migration": {
+      title: "Cloud Migration Strategy & Implementation",
+      slides: [
+        {
+          type: "intro",
+          heading: "Enterprise Cloud Migration Initiative",
+          description: "Comprehensive plan for migrating our infrastructure and applications to the cloud. Focus on security, scalability, and cost optimization while minimizing business disruption.",
+          keywords: ["cloud migration", "cloud computing", "digital transformation", "infrastructure"]
+        },
+        {
+          type: "content",
+          heading: "Migration Strategy & Approach",
+          description: "Hybrid approach: rehost (40%), refactor (35%), rearchitect (25%). Prioritized by business criticality and complexity. Phased migration over 18 months with fallback options.",
+          keywords: ["migration strategy", "cloud adoption", "transformation", "implementation"]
+        },
+        {
+          type: "content",
+          heading: "Technology Stack & Cloud Architecture",
+          description: "Multi-cloud strategy with AWS (60%) and Azure (40%). Containerized applications with Kubernetes. Infrastructure as Code using Terraform. Zero-trust security model implemented.",
+          keywords: ["cloud architecture", "technology stack", "multi-cloud", "security"]
+        },
+        {
+          type: "content",
+          heading: "Cost-Benefit Analysis & ROI Projections",
+          description: "35% reduction in infrastructure costs. 60% improvement in deployment speed. 99.9% uptime guarantee. Expected ROI: 210% over 3 years with payback in 14 months.",
+          keywords: ["cost benefit analysis", "roi", "business case", "financial metrics"]
+        },
+        {
+          type: "outro",
+          heading: "Implementation Timeline & Risk Mitigation",
+          description: "6-phase implementation over 18 months. Risk mitigation: comprehensive testing, gradual cutover, and rollback plans. Change management program for smooth transition.",
+          keywords: ["implementation timeline", "risk mitigation", "project management", "change management"]
+        }
+      ]
+    },
+    "cybersecurity": {
+      title: "Cybersecurity Strategy & Threat Protection",
+      slides: [
+        {
+          type: "intro",
+          heading: "Comprehensive Cybersecurity Framework",
+          description: "Proactive approach to cybersecurity focusing on threat prevention, detection, and response. Addressing evolving threats in today's digital landscape with enterprise-grade protection.",
+          keywords: ["cybersecurity", "threat protection", "information security", "risk management"]
+        },
+        {
+          type: "content",
+          heading: "Current Threat Landscape Analysis",
+          description: "73% increase in sophisticated phishing attacks. Ransomware incidents up 45%. Cloud vulnerabilities represent 60% of new attack vectors. Zero-day exploits increased by 32%.",
+          keywords: ["threat landscape", "risk assessment", "security threats", "vulnerabilities"]
+        },
+        {
+          type: "content",
+          heading: "Security Framework & Defense Strategy",
+          description: "Defense-in-depth approach with 5 security layers. Zero-trust architecture implemented. Real-time threat intelligence feeds. 24/7 SOC monitoring with automated response playbooks.",
+          keywords: ["security framework", "defense strategy", "zero trust", "threat intelligence"]
+        },
+        {
+          type: "content",
+          heading: "Incident Response & Recovery Planning",
+          description: "Average detection time reduced to 15 minutes. Response time under 30 minutes. 99% recovery success rate with maximum 4-hour recovery time objective for critical systems.",
+          keywords: ["incident response", "recovery planning", "disaster recovery", "business continuity"]
+        },
+        {
+          type: "outro",
+          heading: "Security Roadmap & Investment Plan",
+          description: "$8M investment over 2 years. Key initiatives: AI-powered threat detection, security awareness training, and advanced endpoint protection. Targeting 95% reduction in security incidents.",
+          keywords: ["security roadmap", "investment plan", "future initiatives", "security goals"]
+        }
+      ]
+    }
+  },
+  education: {
+    "teaching materials": {
+      title: "Interactive Teaching Materials & Curriculum",
+      slides: [
+        {
+          type: "intro",
+          heading: "Innovative Teaching Methodology & Materials",
+          description: "Modern approach to education combining traditional pedagogy with technology-enhanced learning. Focus on engagement, retention, and practical application of knowledge.",
+          keywords: ["teaching materials", "education", "curriculum", "pedagogy"]
+        },
+        {
+          type: "content",
+          heading: "Learning Objectives & Outcomes",
+          description: "Clear measurable outcomes: 90% mastery of core concepts, 85% improvement in critical thinking skills, and 75% increase in knowledge retention compared to traditional methods.",
+          keywords: ["learning objectives", "educational outcomes", "skill development", "knowledge retention"]
+        },
+        {
+          type: "content",
+          heading: "Interactive Content & Engagement Strategies",
+          description: "Gamified learning modules, virtual simulations, and collaborative projects. 40% increase in student engagement and 30% improvement in assessment scores with interactive content.",
+          keywords: ["interactive content", "engagement strategies", "gamification", "active learning"]
+        },
+        {
+          type: "content",
+          heading: "Assessment Methods & Progress Tracking",
+          description: "Multi-faceted assessment: formative (40%), summative (30%), and project-based (30%). Real-time progress dashboards for students and instructors with predictive analytics.",
+          keywords: ["assessment methods", "progress tracking", "learning analytics", "evaluation"]
+        },
+        {
+          type: "outro",
+          heading: "Implementation Plan & Success Metrics",
+          description: "Phased rollout starting with pilot program. Success metrics: student satisfaction >90%, 25% improvement in completion rates, and 35% reduction in achievement gaps.",
+          keywords: ["implementation plan", "success metrics", "educational outcomes", "evaluation"]
+        }
+      ]
+    }
+  }
+};
+
+// Enhanced image collections with more specific keywords
+const IMAGE_COLLECTIONS = {
+  business: [
+    "business presentation", "corporate meeting", "financial charts",
+    "team collaboration", "business strategy", "data analysis",
+    "professional office", "executive meeting", "market research"
+  ],
+  technology: [
+    "artificial intelligence", "data visualization", "cloud computing",
+    "software development", "cyber security", "innovation technology",
+    "machine learning", "digital transformation", "tech office"
+  ],
+  education: [
+    "classroom", "teaching", "learning", "education",
+    "students", "school", "university", "books", "research"
+  ]
+};
+
+// Common keywords for fallback content generation
+const COMMON_KEYWORDS = {
+  business: ["strategy", "growth", "market", "financial", "analysis", "planning", "performance"],
+  technology: ["innovation", "digital", "technology", "software", "development", "cloud", "security"],
+  education: ["learning", "teaching", "education", "knowledge", "skills", "development", "training"]
+};
 
 /**
- * tools
- *
- * This array contains all the Tambo tools that are registered for use within the application.
- * Each tool is defined with its name, description, and expected props. The tools
- * can be controlled by AI to dynamically fetch data based on user interactions.
+ * Enhanced tools for presentation generation with image integration
  */
-
 export const tools: TamboTool[] = [
   {
-    name: "countryPopulation",
-    description:
-      "A tool to get population statistics by country with advanced filtering options",
-    tool: getCountryPopulations,
-    toolSchema: z
-      .function()
-      .args(
-        z
-          .object({
-            continent: z.string().optional(),
-            sortBy: z.enum(["population", "growthRate"]).optional(),
-            limit: z.number().optional(),
-            order: z.enum(["asc", "desc"]).optional(),
-          })
-          .optional()
-      )
-      .returns(
-        z.array(
-          z.object({
-            countryCode: z.string(),
-            countryName: z.string(),
-            continent: z.enum([
-              "Asia",
-              "Africa",
-              "Europe",
-              "North America",
-              "South America",
-              "Oceania",
-            ]),
-            population: z.number(),
-            year: z.number(),
-            growthRate: z.number(),
-          })
-        )
-      ),
-  },
-  {
-    name: "globalPopulation",
-    description:
-      "A tool to get global population trends with optional year range filtering",
-    tool: getGlobalPopulationTrend,
-    toolSchema: z
-      .function()
-      .args(
-        z
-          .object({
-            startYear: z.number().optional(),
-            endYear: z.number().optional(),
-          })
-          .optional()
-      )
-      .returns(
-        z.array(
-          z.object({
-            year: z.number(),
-            population: z.number(),
-            growthRate: z.number(),
-          })
-        )
-      ),
-  },
-  {
-    name: "get-available-ingredients",
-    description:
-      "Get a list of all the available ingredients that can be used in a recipe.",
-    tool: () => [
-      "pizza dough",
-      "mozzarella cheese",
-      "tomatoes",
-      "basil",
-      "olive oil",
-      "chicken breast",
-      "ground beef",
-      "onions",
-      "garlic",
-      "bell peppers",
-      "mushrooms",
-      "pasta",
-      "rice",
-      "eggs",
-      "bread",
-    ],
-    toolSchema: z.function().returns(z.array(z.string())),
-  },
-  {
-    name: "generate-color-palette",
-    description: "Generate a color palette based on a theme or style. Returns an array of hex color codes.",
-    tool: (theme: string = "sunset") => {
-      const palettes: Record<string, string[]> = {
-        sunset: ["#FF6B6B", "#FF8E53", "#FFB347", "#FFD93D", "#FF6B9D"],
-        ocean: ["#006994", "#1E90FF", "#87CEEB", "#B0E0E6", "#E0F6FF"],
-        forest: ["#228B22", "#32CD32", "#90EE90", "#98FB98", "#F0FFF0"],
-        desert: ["#DEB887", "#F4A460", "#D2B48C", "#CD853F", "#8B4513"],
-        night: ["#191970", "#483D8B", "#6A5ACD", "#9370DB", "#BA55D3"],
-        spring: ["#FFB6C1", "#FFC0CB", "#FFE4E1", "#F0E68C", "#98FB98"],
-        autumn: ["#8B4513", "#A0522D", "#CD853F", "#D2691E", "#FF6347"],
-        winter: ["#F0F8FF", "#E6E6FA", "#B0C4DE", "#87CEEB", "#ADD8E6"],
-        fire: ["#FF4500", "#FF6347", "#FF7F50", "#FF8C00", "#FFA500"],
-        earth: ["#8B4513", "#A0522D", "#CD853F", "#D2691E", "#B8860B"]
-      };
-      return palettes[theme.toLowerCase()] || palettes.sunset;
-    },
-    toolSchema: z
-      .function()
-      .args(z.string().optional().describe("Theme for the color palette (e.g., 'sunset', 'ocean', 'forest')"))
-      .returns(z.array(z.string().describe("Array of hex color codes"))),
-  },
-  {
-    name: "generate-presentation-outline",
-    description: "Generate a structured outline for a presentation on any topic with automatically fetched relevant images from Unsplash.",
-    tool: async (params: { topic: string; slideCount?: number }) => {
-      const { topic, slideCount = 5 } = params;
+    name: "generate-presentation",
+    description: "Generate a professional presentation with contextually relevant content and integrated images from Unsplash.",
+    tool: async (params: { 
+      topic: string; 
+      domain?: string;
+      slideCount?: number;
+      includeImages?: boolean;
+    }) => {
+      const { topic, domain = "business", slideCount = 5, includeImages = true } = params;
       
-      const outlines = {
-        "business pitch": [
-          { type: "intro", heading: "The Problem", description: "Identify the key problem your solution addresses and why it matters now." },
-          { type: "content", heading: "Our Solution", description: "Present your unique approach and how it solves the problem better than alternatives." },
-          { type: "content", heading: "Market Opportunity", description: "Show the size of the market and your target customers." },
-          { type: "content", heading: "Business Model", description: "Explain how you'll make money and scale the business." },
-          { type: "outro", heading: "Next Steps", description: "Clear call to action and what you need from investors or partners." }
-        ],
-        "product demo": [
-          { type: "intro", heading: "Welcome", description: "Introduction to the product and what makes it special." },
-          { type: "content", heading: "Key Features", description: "Showcase the main features and benefits users will love." },
-          { type: "content", heading: "How It Works", description: "Step-by-step walkthrough of the user experience." },
-          { type: "content", heading: "Use Cases", description: "Real-world scenarios where this product shines." },
-          { type: "outro", heading: "Get Started", description: "How to begin using the product and where to learn more." }
-        ],
-        "educational": [
-          { type: "intro", heading: "Learning Objectives", description: "What you'll understand by the end of this presentation." },
-          { type: "content", heading: "Core Concepts", description: "Fundamental principles and key terminology." },
-          { type: "content", heading: "Practical Examples", description: "Real-world applications and case studies." },
-          { type: "content", heading: "Common Mistakes", description: "Pitfalls to avoid and best practices." },
-          { type: "outro", heading: "Summary & Next Steps", description: "Key takeaways and suggested further learning." }
-        ],
-        "ai in healthcare": [
-          { type: "intro", heading: "The AI Healthcare Revolution", description: "Artificial Intelligence is transforming healthcare at an unprecedented pace. From diagnostic imaging to drug discovery, AI is enhancing medical accuracy, reducing costs, and improving patient outcomes. Today we'll explore the current state, benefits, challenges, and future of AI in healthcare." },
-          { type: "content", heading: "Current AI Applications", description: "AI is already deployed in medical imaging (detecting tumors, fractures, and diseases), drug discovery (accelerating research and development), predictive analytics (forecasting patient deterioration), and administrative tasks (automating billing and scheduling). These applications are saving lives and reducing healthcare costs." },
-          { type: "content", heading: "Real-World Impact", description: "AI has demonstrated remarkable results: 30% reduction in diagnostic errors, 40% faster drug discovery processes, improved patient engagement through chatbots, and enhanced surgical precision with robotic assistance. These improvements translate to better patient outcomes and reduced healthcare expenses." },
-          { type: "content", heading: "Challenges & Ethical Considerations", description: "Key challenges include data privacy concerns, regulatory compliance, integration with existing systems, algorithmic bias, and maintaining human oversight. Healthcare organizations must balance innovation with patient safety and ethical AI deployment." },
-          { type: "outro", heading: "The Future of AI Healthcare", description: "The future holds immense promise: personalized medicine based on genetic profiles, real-time health monitoring, advanced disease prediction, and democratized access to quality healthcare. Success requires investment in infrastructure, training, and robust governance frameworks." }
-        ]
-      };
-  
-      // Generate topic-specific content based on the topic
-      const generateTopicSpecificContent = (topic: string) => {
-        const topicLower = topic.toLowerCase();
-        
-        // Define content templates for different types of topics
-        const contentTemplates = {
-          // Technology topics
-          technology: {
-            intro: { heading: `Introduction to ${topic}`, description: `Welcome to our presentation on ${topic}. In today's digital age, ${topic} plays a crucial role in shaping how we interact with technology. We'll explore its evolution, current state, and future potential.` },
-            concept: { heading: `Core Concepts of ${topic}`, description: `Let's understand the fundamental principles behind ${topic}. We'll examine the key components, working mechanisms, and essential features that make ${topic} function effectively.` },
-            deepdive: { heading: `Advanced Features of ${topic}`, description: `Now we'll explore the sophisticated aspects of ${topic}. We'll look at advanced capabilities, technical specifications, and cutting-edge developments in this field.` },
-            applications: { heading: `Real-World Applications`, description: `Discover how ${topic} is being used in various industries and everyday life. We'll examine practical implementations, success stories, and innovative use cases.` },
-            outro: { heading: "Future Trends and Conclusion", description: `Let's explore the future of ${topic} and what developments we can expect. We'll also summarize key takeaways and discuss how to stay updated with this evolving technology.` }
-          },
-          
-          // Business/Finance topics
-          business: {
-            intro: { heading: `Introduction to ${topic}`, description: `Welcome to our presentation on ${topic}. In the world of business and finance, ${topic} serves as an essential tool for managing resources and facilitating transactions. We'll explore its importance and functionality.` },
-            concept: { heading: `Understanding ${topic}`, description: `Let's examine the fundamental aspects of ${topic}. We'll explore different types, key features, and the basic principles that govern how ${topic} works in various contexts.` },
-            deepdive: { heading: `Types and Features of ${topic}`, description: `Now we'll take a detailed look at the various types of ${topic} available today. We'll compare features, discuss advantages and disadvantages, and explore specialized options.` },
-            applications: { heading: `Practical Uses and Benefits`, description: `Discover how ${topic} benefits individuals and businesses in real-world scenarios. We'll examine security features, convenience factors, and practical applications in daily life.` },
-            outro: { heading: "Choosing the Right Solution", description: `Let's discuss how to select the best ${topic} for different needs and situations. We'll provide guidance on making informed decisions and staying secure in an evolving landscape.` }
-          },
-          
-          // General topics
-          general: {
-            intro: { heading: `Introduction to ${topic}`, description: `Welcome to our presentation on ${topic}. ${topic} is an important aspect of our daily lives that affects how we organize, store, and access our belongings. We'll explore its history, evolution, and modern applications.` },
-            concept: { heading: `What is ${topic}?`, description: `Let's understand what ${topic} is and how it functions. We'll explore the basic concept, different types available, and the fundamental purpose that ${topic} serves in our lives.` },
-            deepdive: { heading: `Types and Varieties of ${topic}`, description: `Now we'll examine the different types of ${topic} available today. We'll explore various materials, designs, features, and specialized options for different needs and preferences.` },
-            applications: { heading: `Everyday Uses and Benefits`, description: `Discover how ${topic} makes our daily lives more convenient and organized. We'll explore practical applications, security benefits, and how ${topic} has evolved to meet modern needs.` },
-            outro: { heading: "Making the Right Choice", description: `Let's discuss how to choose the best ${topic} for your specific needs. We'll provide tips on selection criteria, maintenance, and staying informed about new developments in this area.` }
+      // Normalize topic for matching
+      const topicLower = topic.toLowerCase().trim();
+      
+      // Find matching template
+      let selectedTemplate = null;
+      let selectedDomain = domain.toLowerCase() as keyof typeof PRESENTATION_TEMPLATES;
+      
+      // First, try exact match in the requested domain
+      if (
+        Object.prototype.hasOwnProperty.call(PRESENTATION_TEMPLATES, selectedDomain) &&
+        Object.prototype.hasOwnProperty.call(PRESENTATION_TEMPLATES[selectedDomain], topicLower)
+      ) {
+        selectedTemplate = (PRESENTATION_TEMPLATES as any)[selectedDomain][topicLower];
+      } else {
+        // Search across all domains for partial matches
+        for (const [domainKey, domainTemplates] of Object.entries(PRESENTATION_TEMPLATES)) {
+          for (const [templateKey, template] of Object.entries(domainTemplates as Record<string, any>)) {
+            if (topicLower.includes(templateKey) || templateKey.includes(topicLower)) {
+              selectedTemplate = template;
+              selectedDomain = domainKey as keyof typeof PRESENTATION_TEMPLATES;
+              break;
+            }
           }
+          if (selectedTemplate) break;
+        }
+        
+        // If still no match, try to find the closest template by keyword similarity
+        if (!selectedTemplate) {
+          for (const [domainKey, domainTemplates] of Object.entries(PRESENTATION_TEMPLATES)) {
+            for (const [templateKey, template] of Object.entries(domainTemplates as Record<string, any>)) {
+              const templateWords = templateKey.split(' ');
+              const topicWords = topicLower.split(' ');
+              
+              // Check if any words match
+              const matchingWords = templateWords.filter(word => 
+                topicWords.some(topicWord => topicWord.includes(word) || word.includes(topicWord))
+              );
+              
+              if (matchingWords.length > 0) {
+                selectedTemplate = template;
+                selectedDomain = domainKey as keyof typeof PRESENTATION_TEMPLATES;
+                break;
+              }
+            }
+            if (selectedTemplate) break;
+          }
+        }
+      }
+      
+      // If no template found, generate dynamic content focused on the topic
+      if (!selectedTemplate) {
+        selectedTemplate = {
+          title: `Presentation on ${formatTitle(topic)}`,
+          slides: generateDynamicSlides(topic, domain, slideCount)
         };
+      }
+      
+      // Trim to requested slide count
+      const slides = selectedTemplate.slides.slice(0, slideCount);
+      
+      // Add images if requested
+      if (includeImages) {
+        const imageKeywords = IMAGE_COLLECTIONS[selectedDomain] || IMAGE_COLLECTIONS.business;
         
-        // Determine the topic category
-        let category = 'general';
-        if (topicLower.includes('wallet') || topicLower.includes('money') || topicLower.includes('finance') || topicLower.includes('bank') || topicLower.includes('credit') || topicLower.includes('payment')) {
-          category = 'business';
-        } else if (topicLower.includes('ai') || topicLower.includes('technology') || topicLower.includes('software') || topicLower.includes('digital') || topicLower.includes('app') || topicLower.includes('computer')) {
-          category = 'technology';
-        }
+        // Enhance slides with image queries and suggested images
+        const slidesWithImages = await Promise.all(slides.map(async (slide: any, index: number) => {
+          // Use slide keywords or fallback to topic-based keywords
+          const keywords = slide.keywords || [
+            ...(slide.heading?.toLowerCase().split(' ') || []),
+            ...(topic.toLowerCase().split(' ') || []),
+            imageKeywords[index % imageKeywords.length]
+          ].filter(k => k.length > 3); // Filter out short words
+          
+          const searchQuery = keywords.slice(0, 3).join(' ') || topic;
+          
+          try {
+            // Search for relevant images using the tool
+            const imageResults = await tools[1].tool({ query: searchQuery });
+            return {
+              ...slide,
+              imageQuery: searchQuery,
+              imageUrl: imageResults?.[0]?.urls?.regular || `https://source.unsplash.com/800x400/?${encodeURIComponent(searchQuery)}`,
+              imageAlt: imageResults?.[0]?.alt_description || `${searchQuery} image`,
+              photographer: imageResults?.[0]?.user?.name,
+              unsplashUrl: imageResults?.[0]?.links?.html
+            };
+          } catch (error) {
+            console.error("Error fetching image:", error);
+            return {
+              ...slide,
+              imageQuery: searchQuery,
+              suggestedImage: `https://source.unsplash.com/800x400/?${encodeURIComponent(searchQuery)}`
+            };
+          }
+        }));
         
-        const template = contentTemplates[category as keyof typeof contentTemplates];
-        
-        return [
-          { type: "intro", heading: template.intro.heading, description: template.intro.description },
-          { type: "content", heading: template.concept.heading, description: template.concept.description },
-          { type: "content", heading: template.deepdive.heading, description: template.deepdive.description },
-          { type: "content", heading: template.applications.heading, description: template.applications.description },
-          { type: "outro", heading: template.outro.heading, description: template.outro.description }
-        ];
+        return {
+          title: selectedTemplate.title || formatTitle(topic),
+          domain: selectedDomain,
+          slides: slidesWithImages
+        };
+      }
+      
+      return {
+        title: selectedTemplate.title || formatTitle(topic),
+        domain: selectedDomain,
+        slides
       };
-      
-      const genericOutline = generateTopicSpecificContent(topic);
-  
-      const selectedOutline = outlines[topic.toLowerCase() as keyof typeof outlines] || genericOutline;
-      const finalOutline = selectedOutline.slice(0, slideCount);
-      
-      // Add suggested images to each slide
-      const slidesWithImages = finalOutline.map(async (slide, index) => {
-        try {
-          // Create search query based on slide content
-          let searchQuery = topic;
-          console.log("Search query for Unsplash:", searchQuery);
-          
-          // Enhance search query based on slide type and content
-          if (slide.type === "intro") {
-            searchQuery = `${topic} introduction`;
-          } else if (slide.type === "outro") {
-            searchQuery = `${topic} conclusion`;
-          } else if (slide.type === "content") {
-            // Extract key words from slide heading for better image search
-            const headingWords = slide.heading.toLowerCase().split(' ').filter(word => 
-              word.length > 3 && !['the', 'and', 'for', 'with', 'into', 'about', 'their', 'this', 'that'].includes(word)
-            );
-            if (headingWords.length > 0) {
-              searchQuery = `${topic} ${headingWords.slice(0, 2).join(' ')}`;
-            } else {
-              searchQuery = `${topic} concept`;
-            }
-          }
-          
-          // Use Unsplash API to search for images
-          console.log("Making Unsplash API call for:", searchQuery);
-          const response = await fetch(
-            `https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=10&orientation=landscape`,
-            {
-              headers: {
-                'Authorization': `Client-ID ${UNSPLASH_ACCESS_KEY}`,
-                'Accept-Version': 'v1'
-              }
-            }
-          );
-          console.log(`API KEY CHECK: ${UNSPLASH_ACCESS_KEY}`)
-          
-          console.log("Unsplash API response status:", response.status);
-          
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error("Unsplash API error response:", errorText);
-            throw new Error(`Unsplash API error: ${response.status} - ${errorText}`);
-          }
-          
-          const data = await response.json();
-          console.log("Unsplash API response data:", data);
-          
-          if (data.results && data.results.length > 0) {
-            // Use slide index to get different images and avoid duplicates
-            // Add some randomization to get more variety
-            const imageIndex = (index + Math.floor(Math.random() * 3)) % data.results.length;
-            const image = data.results[imageIndex];
-            return {
-              ...slide,
-              imageUrl: `${image.urls.regular}?w=800&q=80&fit=crop`,
-              imageAlt: image.alt_description || `Illustration for ${slide.heading}`,
-              photographer: image.user?.name || 'Unknown',
-              unsplashUrl: image.links.html
-            };
-          } else {
-            // Fallback to a generic search
-            console.log("Trying fallback search for:", topic);
-            const fallbackResponse = await fetch(
-              `https://api.unsplash.com/search/photos?query=${encodeURIComponent(topic)}&per_page=10&orientation=landscape`,
-              {
-                headers: {
-                  'Authorization': `Client-ID ${UNSPLASH_ACCESS_KEY}`,
-                  'Accept-Version': 'v1'
-                }
-              }
-            );
-            
-            console.log("Fallback response status:", fallbackResponse.status);
-            
-            if (fallbackResponse.ok) {
-              const fallbackData = await fallbackResponse.json();
-              console.log("Fallback search results:", fallbackData);
-              if (fallbackData.results && fallbackData.results.length > 0) {
-                // Use slide index to get different images with randomization
-                const fallbackImageIndex = (index + Math.floor(Math.random() * 3)) % fallbackData.results.length;
-                const fallbackImage = fallbackData.results[fallbackImageIndex];
-                return {
-                  ...slide,
-                  imageUrl: `${fallbackImage.urls.regular}?w=800&q=80&fit=crop`,
-                  imageAlt: `Illustration for ${topic}`,
-                  photographer: fallbackImage.user?.name || 'Unknown',
-                  unsplashUrl: fallbackImage.links.html
-                };
-              }
-            }
-            
-            // Ultimate fallback
-            return {
-              ...slide,
-              imageUrl: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&q=80",
-              imageAlt: `Illustration for ${slide.heading}`,
-              photographer: 'Unsplash',
-              unsplashUrl: 'https://unsplash.com'
-            };
-          }
-        } catch (error) {
-          console.error('Error fetching from Unsplash:', error);
-          
-          // Return a reliable fallback image
-          return {
-            ...slide,
-            imageUrl: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&q=80",
-            imageAlt: `Illustration for ${slide.heading}`,
-            photographer: 'Unsplash',
-            unsplashUrl: 'https://unsplash.com'
-          };
-        }
-      });
-      
-      // Wait for all image fetching to complete
-      const slidesWithResolvedImages = await Promise.all(slidesWithImages);
-      
-      return slidesWithResolvedImages;
     },
     toolSchema: z.function()
-      .args(z.object({ 
-        topic: z.string().describe("Presentation topic"),
-        slideCount: z.number().optional().describe("Number of slides (default: 5)")
+      .args(z.object({
+        topic: z.string().describe("The main topic or title of the presentation"),
+        domain: z.enum(["business", "technology", "education", "healthcare"]).optional()
+          .describe("The domain/category of the presentation"),
+        slideCount: z.number().min(3).max(10).optional()
+          .describe("Number of slides to generate (3-10, default: 5)"),
+        includeImages: z.boolean().optional()
+          .describe("Whether to include relevant images (default: true)")
       }))
-      .returns(z.array(z.object({
-        type: z.enum(["intro", "content", "outro"]),
-        heading: z.string(),
-        description: z.string(),
-        imageUrl: z.string().optional(),
-        imageAlt: z.string().optional(),
-      }))),
+      .returns(z.object({
+        title: z.string(),
+        domain: z.string(),
+        slides: z.array(z.object({
+          type: z.enum(["intro", "content", "outro"]),
+          heading: z.string(),
+          description: z.string(),
+          keywords: z.array(z.string()).optional(),
+          imageQuery: z.string().optional(),
+          imageUrl: z.string().optional(),
+          imageAlt: z.string().optional(),
+          photographer: z.string().optional(),
+          unsplashUrl: z.string().optional()
+        }))
+      }))
   },
   
   {
     name: "search-unsplash-images",
-    description: "Search Unsplash for relevant images based on slide content",
-    tool: async (params: { query: string; slideType?: string }) => {
-      const { query, slideType } = params;
+    description: "Search for high-quality, professional images from Unsplash based on keywords",
+    tool: async (params: { query: string; count?: number }) => {
+      const { query, count = 1 } = params;
+      const accessKey = process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY;
+      
+      if (!accessKey) {
+        throw new Error("Unsplash access key not configured. Please add NEXT_PUBLIC_UNSPLASH_ACCESS_KEY to your environment variables.");
+      }
       
       try {
-        // Create search query based on slide content and type
-        let searchQuery = query;
-        
-        // Enhance search query based on slide type
-        if (slideType === "intro") {
-          searchQuery = `${query} introduction overview`;
-        } else if (slideType === "outro") {
-          searchQuery = `${query} conclusion summary`;
-        } else if (slideType === "content") {
-          searchQuery = `${query} concept illustration`;
-        }
-        
-        // Use Unsplash API to search for images
         const response = await fetch(
-          `https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=5&orientation=landscape`,
+          `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=${count}&orientation=landscape`,
           {
             headers: {
-              'Authorization': `Client-ID ${UNSPLASH_ACCESS_KEY}`,
-              'Accept-Version': 'v1'
+              Authorization: `Client-ID ${accessKey}`
             }
           }
         );
@@ -406,157 +502,212 @@ export const tools: TamboTool[] = [
         }
         
         const data = await response.json();
-        
-        if (data.results && data.results.length > 0) {
-          const image = data.results[0]; // Get the first (most relevant) result
-          return {
-            imageUrl: `${image.urls.regular}?w=800&q=80&fit=crop`,
-            imageAlt: image.alt_description || `Illustration for ${query}`,
-            photographer: image.user?.name || 'Unknown',
-            unsplashUrl: image.links.html
-          };
-        } else {
-          // Fallback to a generic search
-          const fallbackResponse = await fetch(
-            `https://api.unsplash.com/search/photos?query=presentation&per_page=1&orientation=landscape`,
-            {
-              headers: {
-                'Authorization': `Client-ID ${UNSPLASH_ACCESS_KEY}`,
-                'Accept-Version': 'v1'
-              }
-            }
-          );
-          
-          if (fallbackResponse.ok) {
-            const fallbackData = await fallbackResponse.json();
-            if (fallbackData.results && fallbackData.results.length > 0) {
-              const fallbackImage = fallbackData.results[0];
-              return {
-                imageUrl: `${fallbackImage.urls.regular}?w=800&q=80&fit=crop`,
-                imageAlt: `Generic presentation illustration`,
-                photographer: fallbackImage.user?.name || 'Unknown',
-                unsplashUrl: fallbackImage.links.html
-              };
-            }
-          }
-          
-          // Ultimate fallback
-          return {
-            imageUrl: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&q=80",
-            imageAlt: `Illustration for ${query}`,
-            photographer: 'Unsplash',
-            unsplashUrl: 'https://unsplash.com'
-          };
-        }
+        return data.results || [];
       } catch (error) {
-        console.error('Error fetching from Unsplash:', error);
-        
-        // Return a reliable fallback image
-        return {
-          imageUrl: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&q=80",
-          imageAlt: `Illustration for ${query}`,
-          photographer: 'Unsplash',
-          unsplashUrl: 'https://unsplash.com'
-        };
+        console.error("Error fetching images from Unsplash:", error);
+        throw new Error("Failed to fetch images. Please check your API key and connection.");
       }
     },
     toolSchema: z.function()
-      .args(z.object({ 
+      .args(z.object({
         query: z.string().describe("Search query for finding relevant images"),
-        slideType: z.string().optional().describe("Type of slide to enhance search relevance")
+        count: z.number().min(1).max(10).optional().describe("Number of images to return (1-10, default: 1)")
+      }))
+      .returns(z.array(z.object({
+        id: z.string(),
+        urls: z.object({
+          regular: z.string(),
+          small: z.string(),
+          thumb: z.string()
+        }),
+        alt_description: z.string().optional(),
+        user: z.object({
+          name: z.string(),
+          links: z.object({
+            html: z.string()
+          })
+        }),
+        links: z.object({
+          html: z.string()
+        })
+      })))
+  },
+  
+  {
+    name: "get-presentation-templates",
+    description: "Get available presentation templates and topics for quick generation",
+    tool: () => {
+      const templates = [];
+      for (const [domain, domainTemplates] of Object.entries(PRESENTATION_TEMPLATES)) {
+        for (const [topic, template] of Object.entries(domainTemplates)) {
+          templates.push({
+            domain,
+            topic,
+            title: template.title,
+            slideCount: template.slides.length,
+            description: `Professional ${topic} presentation for ${domain} domain`
+          });
+        }
+      }
+      return templates;
+    },
+    toolSchema: z.function()
+      .returns(z.array(z.object({
+        domain: z.string(),
+        topic: z.string(),
+        title: z.string(),
+        slideCount: z.number(),
+        description: z.string()
+      })))
+  },
+  
+  {
+    name: "customize-slide-content",
+    description: "Customize specific slide content with your own text and data",
+    tool: (params: {
+      slideIndex: number;
+      heading?: string;
+      description?: string;
+      bulletPoints?: string[];
+    }) => {
+      const { slideIndex, heading, description, bulletPoints } = params;
+      
+      let formattedDescription = description || "";
+      
+      if (bulletPoints && bulletPoints.length > 0) {
+        formattedDescription += "\n\nKey Points:\n" + bulletPoints.map(point => `• ${point}`).join("\n");
+      }
+      
+      return {
+        slideIndex,
+        updated: true,
+        heading: heading || "Custom Slide",
+        description: formattedDescription,
+        updatedAt: new Date().toISOString()
+      };
+    },
+    toolSchema: z.function()
+      .args(z.object({
+        slideIndex: z.number().describe("Index of the slide to customize (0-based)"),
+        heading: z.string().optional().describe("New heading for the slide"),
+        description: z.string().optional().describe("New description/content"),
+        bulletPoints: z.array(z.string()).optional().describe("Bullet points to include")
       }))
       .returns(z.object({
-        imageUrl: z.string(),
-        imageAlt: z.string(),
-        photographer: z.string(),
-        unsplashUrl: z.string(),
-      })),
+        slideIndex: z.number(),
+        updated: z.boolean(),
+        heading: z.string(),
+        description: z.string(),
+        updatedAt: z.string()
+      }))
   }
-  // Add more tools here
 ];
 
 /**
- * components
- *
- * This array contains all the Tambo components that are registered for use within the application.
- * Each component is defined with its name, description, and expected props. The components
- * can be controlled by AI to dynamically render UI elements based on user interactions.
+ * Helper function to generate dynamic slides for any topic with topic-focused content
+ */
+function generateDynamicSlides(topic: string, domain: string, count: number) {
+  const slides = [];
+  const domainKeywords = COMMON_KEYWORDS[domain as keyof typeof COMMON_KEYWORDS] || COMMON_KEYWORDS.business;
+  
+  // Intro slide - always focused on the specific topic
+  slides.push({
+    type: "intro" as const,
+    heading: `Introduction to ${formatTitle(topic)}`,
+    description: `Comprehensive overview of ${topic} covering key concepts, current trends, and practical applications in the ${domain} sector. This presentation provides valuable insights and actionable strategies specifically focused on ${topic}.`,
+    keywords: [topic, domain, ...domainKeywords]
+  });
+  
+  // Content slides - all focused on the topic
+  const contentTopics = [
+    {
+      heading: `Current State of ${formatTitle(topic)}`,
+      description: `Analysis of the current landscape of ${topic}, including recent developments, market dynamics, and the evolving ecosystem. This section examines how ${topic} is transforming the ${domain} industry.`,
+      keywords: [topic, "current state", "analysis", "market dynamics", ...domainKeywords]
+    },
+    {
+      heading: `Key Benefits of ${formatTitle(topic)}`,
+      description: `Exploring the significant advantages and value proposition of ${topic}, including ROI potential, efficiency gains, and strategic benefits for organizations adopting ${topic} solutions.`,
+      keywords: [topic, "benefits", "advantages", "value proposition", ...domainKeywords]
+    },
+    {
+      heading: `Implementation Strategies for ${formatTitle(topic)}`,
+      description: `Practical approaches and methodologies for successfully implementing ${topic} initiatives, including best practices, common pitfalls to avoid, and proven frameworks for ${topic} adoption.`,
+      keywords: [topic, "implementation", "strategies", "best practices", ...domainKeywords]
+    },
+    {
+      heading: `Challenges in ${formatTitle(topic)} Adoption`,
+      description: `Identifying common challenges, barriers, and obstacles organizations face when adopting ${topic}, along with effective solutions, mitigation strategies, and risk management approaches.`,
+      keywords: [topic, "challenges", "solutions", "risk management", ...domainKeywords]
+    },
+    {
+      heading: `Case Studies: ${formatTitle(topic)} in Action`,
+      description: `Real-world examples and success stories of organizations that have successfully implemented ${topic} solutions, demonstrating tangible results, lessons learned, and best practices.`,
+      keywords: [topic, "case studies", "success stories", "examples", ...domainKeywords]
+    },
+    {
+      heading: `Future of ${formatTitle(topic)}`,
+      description: `Emerging trends, innovation opportunities, and future developments in ${topic}, including predictions for the next 3-5 years and how organizations can prepare for the evolution of ${topic}.`,
+      keywords: [topic, "future trends", "innovation", "predictions", ...domainKeywords]
+    }
+  ];
+  
+  // Add content slides based on requested count, ensuring all are topic-focused
+  const contentCount = Math.min(count - 2, contentTopics.length);
+  for (let i = 0; i < contentCount; i++) {
+    slides.push({
+      type: "content" as const,
+      ...contentTopics[i]
+    });
+  }
+  
+  // Outro slide - focused on the topic
+  slides.push({
+    type: "outro" as const,
+    heading: `Conclusion: Next Steps for ${formatTitle(topic)}`,
+    description: `Summary of key insights, strategic recommendations, and actionable next steps for implementing ${topic} initiatives. Includes timeline, resource requirements, and success metrics specifically for ${topic} projects.`,
+    keywords: [topic, "conclusion", "next steps", "action plan", ...domainKeywords]
+  });
+  
+  return slides.slice(0, count);
+}
+
+/**
+ * Helper function to format topic titles
+ */
+function formatTitle(topic: string): string {
+  return topic
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+/**
+ * Components registration
  */
 export const components: TamboComponent[] = [
   {
-    name: "Graph",
-    description:
-      "A component that renders various types of charts (bar, line, pie) using Recharts. Supports customizable data visualization with labels, datasets, and styling options.",
-    component: Graph,
-    propsSchema: graphSchema,
-  },
-  {
-    name: "DataCard",
-    description:
-      "A component that displays options as clickable cards with links and summaries with the ability to select multiple items.",
-    component: DataCard,
-    propsSchema: dataCardSchema,
-  },
-  {
-    name: "RecipeCard",
-    description: "A component that renders a recipe card",
-    component: RecipeCard,
-    propsSchema: z.object({
-      title: z.string().describe("The title of the recipe"),
-      description: z.string().describe("The description of the recipe"),
-      prepTime: z.number().describe("The prep time of the recipe in minutes"),
-      cookTime: z.number().describe("The cook time of the recipe in minutes"),
-      originalServings: z
-        .number()
-        .describe("The original servings of the recipe"),
-      ingredients: z
-        .array(
-          z.object({
-            name: z.string().describe("The name of the ingredient"),
-            amount: z.number().describe("The amount of the ingredient"),
-            unit: z.string().describe("The unit of the ingredient"),
-          })
-        )
-        .describe("The ingredients of the recipe"),
-    }),
-  },
-  {
-    name: "WeatherCard",
-    description: "A component that displays weather information for a city.",
-    component: WeatherCard,
-    propsSchema: z.object({
-      city: z.string().describe("The city name"),
-      temperature: z.number().describe("Termperature in Celcius"),
-      condition: z.enum(["sunny", "cloudy", "rainy"]).describe("Weather condition"),
-      humidity: z.number().describe("Humidity Percentage"),
-    }),
-  },
-  {
-    name: "ColorPalette",
-    description: "A component that displays a color palette with hex codes",
-    component: ColorPalette,
-    propsSchema: z.object({
-      colors: z.array(z.string()).describe("Array of hex color codes"),
-      paletteName: z.string().describe("Name of the color palette"),
-    }),
-  },
-  {
     name: "SlidesGenerator",
-    description: "A component that displays an interactive slide presentation with navigation",
+    description: "A professional presentation component with smooth transitions, navigation controls, and theme customization",
     component: SlidesGenerator,
     propsSchema: z.object({
-      title: z.string().describe("The presentation title"),
-      theme: z.enum(["light", "dark", "blue", "purple"]).optional().describe("Visual theme"),
+      title: z.string().describe("Presentation title"),
+      theme: z.enum(["light", "dark", "blue", "purple", "gradient"]).optional()
+        .describe("Visual theme for the presentation"),
       slides: z.array(
         z.object({
-          type: z.enum(["intro", "content", "outro"]).describe("Type of slide"),
-          heading: z.string().describe("Slide heading/title"),
-          description: z.string().describe("Slide content/description"),
-          imageUrl: z.string().optional().describe("URL for slide image"),
-          imageAlt: z.string().optional().describe("Alt text for image"),
+          type: z.enum(["intro", "content", "outro"]).describe("Slide type"),
+          heading: z.string().describe("Slide heading"),
+          description: z.string().describe("Slide content"),
+          imageUrl: z.string().optional().describe("Image URL for the slide"),
+          imageAlt: z.string().optional().describe("Image alt text"),
+          imageQuery: z.string().optional().describe("Search query used for the image"),
+          photographer: z.string().optional().describe("Photographer name"),
+          unsplashUrl: z.string().optional().describe("Unsplash URL for attribution")
         })
-      ).describe("Array of slides in the presentation"),
+      ).describe("Array of slides with content and optional images"),
+      autoPlay: z.boolean().optional().describe("Auto-advance slides"),
+      showProgress: z.boolean().optional().describe("Show progress indicator")
     }),
   }
-  // Add more components here
 ];
