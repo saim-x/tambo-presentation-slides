@@ -12,7 +12,7 @@ This template provides a complete solution for generating professional presentat
 1. Fork this repository to your GitHub account
 2. Clone your forked repository:
 ```bash
-git clone https://github.com/saim-x/tambo-presentation-slides
+git clone https://github.com<your-username>\tambo-presentation-slides.git
 cd tambo-presentation-slides
 ```
 
